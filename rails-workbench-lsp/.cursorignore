@@ -1,0 +1,11 @@
+# LSP-only workspace
+#
+# Keep source and Gemfile indexed when this package exists.
+
+vendor/
+tmp/
+log/
+.bundle/
+node_modules/
+coverage/
+*.tsbuildinfo

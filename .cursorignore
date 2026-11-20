@@ -1,0 +1,27 @@
+# Monorepo workspace (repository root)
+#
+# Keep indexed: src/, package.json, tsconfig, eslint, .vscode (debug),
+# README/CHANGELOG/AGENTS.md, and TypeScript tests. Ignore artifacts only.
+
+# VS Code extension (TypeScript)
+rails-workbench/node_modules/
+rails-workbench/out/
+rails-workbench/dist/
+rails-workbench/.vscode-test/
+rails-workbench/**/*.vsix
+rails-workbench/coverage/
+**/*.tsbuildinfo
+
+# LSP (Ruby / Node)
+rails-workbench-lsp/vendor/
+rails-workbench-lsp/tmp/
+rails-workbench-lsp/log/
+rails-workbench-lsp/.bundle/
+rails-workbench-lsp/node_modules/
+rails-workbench-lsp/coverage/
+
+# yo code scaffold
+**/vsc-extension-quickstart.md
+
+# OS
+**/.DS_Store

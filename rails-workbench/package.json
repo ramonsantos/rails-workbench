@@ -1,7 +1,7 @@
 {
   "name": "rails-workbench",
   "displayName": "Rails Workbench",
-  "description": "",
+  "description": "Rails-oriented VS Code tools, including go to definition for view partials in ERB, Haml, and Slim.",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.138.0"
@@ -9,15 +9,30 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onLanguage:erb",
+    "onLanguage:haml",
+    "onLanguage:slim"
+  ],
   "main": "./out/extension.js",
   "contributes": {
-    "commands": [
-      {
-        "command": "rails-workbench.helloWorld",
-        "title": "Hello World"
+    "configuration": {
+      "title": "Rails Workbench",
+      "properties": {
+        "rails-workbench.partials.viewFileExtensions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "html.erb",
+            "html.haml",
+            "html.slim"
+          ],
+          "description": "Template extensions used when resolving Rails partial files."
+        }
       }
-    ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

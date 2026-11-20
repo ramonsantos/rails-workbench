@@ -1,0 +1,12 @@
+# Extension-only workspace
+#
+# Relevant for Cursor: src/, package.json, tests, .vscode/, configs.
+
+node_modules/
+out/
+dist/
+.vscode-test/
+*.vsix
+coverage/
+*.tsbuildinfo
+vsc-extension-quickstart.md

@@ -1,0 +1,40 @@
+# --- VS Code extension (rails-workbench) ---
+
+# Dependencies
+**/node_modules/
+
+# TypeScript / build output
+rails-workbench/out/
+rails-workbench/dist/
+**/*.tsbuildinfo
+
+# @vscode/test-electron: downloaded VS Code + ephemeral profile
+**/.vscode-test/
+
+# Local package for manual install
+*.vsix
+
+# Test coverage
+**/coverage/
+
+# --- LSP (rails-workbench-lsp) ---
+rails-workbench-lsp/vendor/bundle/
+rails-workbench-lsp/.bundle/
+rails-workbench-lsp/tmp/
+rails-workbench-lsp/log/
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+
+# --- Logs ---
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# --- Secrets / local env ---
+.env
+.env.*
+!.env.example

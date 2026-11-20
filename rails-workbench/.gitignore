@@ -1,0 +1,10 @@
+# When this package is the workspace root.
+# Equivalent rules live in the monorepo root .gitignore.
+
+node_modules/
+out/
+dist/
+.vscode-test/
+*.vsix
+coverage/
+*.tsbuildinfo
