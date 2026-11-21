@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { registerActivityBarHomeView } from './activityBar/homeView';
+import { registerMethodVisibility } from './methodVisibility/registerMethodVisibility';
 import { registerModelsFeature } from './models/registerModels';
 import { registerPartialDefinitionProvider } from './partials/definitionProvider';
 import { registerRoutesFeature } from './routes/registerRoutes';
@@ -11,6 +12,7 @@ export function activate(context: vscode.ExtensionContext): void {
 	registerRoutesFeature(context);
 	registerSchemaFeature(context);
 	registerModelsFeature(context);
+	registerMethodVisibility(context);
 }
 
 export function deactivate(): void {}

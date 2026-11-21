@@ -43,6 +43,17 @@
           "type": "string",
           "default": "",
           "description": "Working directory for the routes command. When empty, uses the detected Rails application root."
+        },
+        "rails-workbench.methodVisibility.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Highlight public Ruby method names in class and module bodies."
+        },
+        "rails-workbench.methodVisibility.publicMethodColor": {
+          "type": "string",
+          "default": "#3DDC97",
+          "pattern": "^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$",
+          "description": "Hex color for public method names (e.g. #3DDC97). Invalid values fall back to the default."
         }
       }
     },
