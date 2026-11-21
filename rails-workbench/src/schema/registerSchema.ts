@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { SchemaColonCompletionProvider } from './colonCompletionProvider';
 import { SchemaDotCompletionProvider } from './dotCompletionProvider';
 import { registerSchemaDefinitionProvider } from './definitionProvider';
+import { registerSchemaModelDefinitionProvider } from './schemaModelDefinitionProvider';
 import { registerSchemaCommands } from './schemaCommands';
 import { SchemaStore } from './schemaStore';
 
@@ -17,6 +18,7 @@ export function registerSchemaFeature(context: vscode.ExtensionContext): void {
 	context.subscriptions.push(store);
 
 	registerSchemaDefinitionProvider(context, store);
+	registerSchemaModelDefinitionProvider(context, store);
 	registerSchemaCommands(context, store);
 
 	const dot = new SchemaDotCompletionProvider(store);
