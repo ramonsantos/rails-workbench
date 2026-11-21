@@ -11,6 +11,7 @@
     "Other"
   ],
   "activationEvents": [
+    "onView:rails-workbench.home",
     "onLanguage:ruby",
     "onLanguage:erb",
     "onLanguage:haml",
@@ -44,6 +45,24 @@
           "description": "Working directory for the routes command. When empty, uses the detected Rails application root."
         }
       }
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "rails-workbench",
+          "title": "Rails Workbench",
+          "icon": "media/activity-bar-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "rails-workbench": [
+        {
+          "id": "rails-workbench.home",
+          "name": "Rails Workbench",
+          "type": "webview"
+        }
+      ]
     },
     "commands": [
       {

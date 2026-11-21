@@ -28,6 +28,8 @@ User-facing chat with contributors may be in any language; **artifacts in git st
 ## Extension development (`rails-workbench/`)
 
 - Entry: `src/extension.ts`
+- Activity Bar sidebar: `src/activityBar/homeView.ts` (webview; open latest migration)
+- Latest migration: `src/migrations/` (`pickLatestMigration`, `openLatestMigration`)
 - Partial go-to-definition: `src/partials/` (`parseRenderCall`, `resolvePartial`, `definitionProvider`)
 - URL helpers (routes): `src/routes/` (`parseRoutesOutput`, `loadRoutes`, definition/completion providers). Routes are loaded via configurable shell command `rails-workbench.routes.command`
 - DB schema: `src/schema/` (`parseSchema`, `SchemaStore`, column definition/completion)
@@ -35,7 +37,7 @@ User-facing chat with contributors may be in any language; **artifacts in git st
 - Tests: `npm test` (uses `@vscode/test-electron`; downloads VS Code into `.vscode-test/`)
 - Local install: `npx @vscode/vsce package --no-dependencies` → install the generated `.vsix`
 
-Activation: `onLanguage` for `erb`, `haml`, and `slim`.
+Activation: `onView:rails-workbench.home` and `onLanguage` for `ruby`, `erb`, `haml`, and `slim`.
 
 ## Engineering principles
 
