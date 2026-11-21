@@ -1,7 +1,7 @@
 {
   "name": "rails-workbench",
   "displayName": "Rails Workbench",
-  "description": "Rails-oriented VS Code tools: partial and URL helper navigation, completion, and configurable routes loading.",
+  "description": "Rails-oriented VS Code tools: partials, routes, db/schema columns, and configurable routes loading.",
   "icon": "media/icon.png",
   "version": "0.0.1",
   "engines": {
@@ -50,6 +50,16 @@
         "command": "rails-workbench.routes.insert",
         "category": "Rails Workbench",
         "title": "Insert URL Helper"
+      },
+      {
+        "command": "rails-workbench.schema.open",
+        "category": "Rails Workbench",
+        "title": "Open Schema Table"
+      },
+      {
+        "command": "rails-workbench.schema.insert",
+        "category": "Rails Workbench",
+        "title": "Insert Schema Column"
       }
     ]
   },

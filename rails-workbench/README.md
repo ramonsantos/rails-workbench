@@ -20,6 +20,16 @@ When locale or variant files exist (`_form.en.html.erb`, `_form.html+phone.erb`)
 
 - `rails-workbench.partials.viewFileExtensions`: template extensions used when resolving partials (default: `html.erb`, `html.haml`, `html.slim`).
 
+### Database schema (`db/schema.rb`)
+
+In **Ruby**, **ERB**, **Haml**, and **Slim**:
+
+- **Go to Definition** on `user.email` or a column inside an `app/models` file opens the column line in `db/schema.rb` (only when the column exists in the parsed schema).
+- **Completion** after `.` on a table/receiver, on `validates :`, or on `Model.human_attribute_name :`.
+- Commands **Open Schema Table** and **Insert Schema Column**.
+
+Requires `db/schema.rb` in the project. For `schema_format = :sql`, keep generating a Ruby schema dump in development (see legacy Rails DB Schema docs).
+
 ### URL helpers (routes)
 
 In **Ruby**, **ERB**, **Haml**, and **Slim**:

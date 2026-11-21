@@ -30,6 +30,7 @@ User-facing chat with contributors may be in any language; **artifacts in git st
 - Entry: `src/extension.ts`
 - Partial go-to-definition: `src/partials/` (`parseRenderCall`, `resolvePartial`, `definitionProvider`)
 - URL helpers (routes): `src/routes/` (`parseRoutesOutput`, `loadRoutes`, definition/completion providers). Routes are loaded via configurable shell command `rails-workbench.routes.command`
+- DB schema: `src/schema/` (`parseSchema`, `SchemaStore`, column definition/completion)
 - Build: `npm run compile` (output in `out/`, not committed)
 - Tests: `npm test` (uses `@vscode/test-electron`; downloads VS Code into `.vscode-test/`)
 - Local install: `npx @vscode/vsce package --no-dependencies` → install the generated `.vsix`
