@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 128 128" shape-rendering="geometricPrecision" text-rendering="geometricPrecision">
+  <defs>
+    <linearGradient id="panel" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#232336"/>
+      <stop offset="100%" stop-color="#161622"/>
+    </linearGradient>
+    <linearGradient id="gemLit" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff6b6b"/>
+      <stop offset="100%" stop-color="#b8000c"/>
+    </linearGradient>
+    <linearGradient id="gemShade" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#D30001"/>
+      <stop offset="100%" stop-color="#7a0010"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="22" fill="#D30001"/>
+  <rect x="6" y="6" width="116" height="116" rx="18" fill="url(#panel)"/>
+  <text x="64" y="84" text-anchor="middle" font-size="50" font-weight="700" fill="#f2f3f8" font-family="Segoe UI, Ubuntu, Cantarell, Helvetica Neue, Arial, sans-serif" letter-spacing="-1.5">RW</text>
+  <g transform="translate(88,20)">
+    <path fill="url(#gemLit)" d="M11 0 20 8.5 11 20 2 8.5z"/>
+    <path fill="url(#gemShade)" opacity="0.85" d="M11 0v20L2 8.5z"/>
+    <path fill="#ffffff" opacity="0.22" d="M11 2.5l6.5 4.5-6.5 3.5z"/>
+    <path fill="none" stroke="#5c0010" stroke-width="0.55" d="M11 0 20 8.5 11 20 2 8.5z"/>
+  </g>
+</svg>

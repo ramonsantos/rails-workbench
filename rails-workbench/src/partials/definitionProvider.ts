@@ -1,7 +1,8 @@
 import * as path from 'node:path';
 import * as vscode from 'vscode';
+import { findRailsRoot } from '../rails/findRailsRoot';
+import { pathExists } from '../rails/pathExists';
 import { parseRenderCall } from './parseRenderCall';
-import { environmentRbPath, railsRootCandidates } from './railsRoot';
 import {
 	collectPartialFilenames,
 	partialFilePaths,
@@ -15,25 +16,6 @@ const VIEW_LANGUAGES = [
 ] as const;
 
 const CONFIG_KEY = 'partials.viewFileExtensions';
-
-async function pathExists(uri: vscode.Uri): Promise<boolean> {
-	try {
-		await vscode.workspace.fs.stat(uri);
-		return true;
-	} catch {
-		return false;
-	}
-}
-
-async function findRailsRoot(documentPath: string): Promise<string | null> {
-	for (const candidate of railsRootCandidates(path.dirname(documentPath))) {
-		const envUri = vscode.Uri.file(environmentRbPath(candidate));
-		if (await pathExists(envUri)) {
-			return candidate;
-		}
-	}
-	return null;
-}
 
 function viewFileExtensions(): string[] {
 	return vscode.workspace

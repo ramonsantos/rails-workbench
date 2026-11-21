@@ -1,7 +1,8 @@
 {
   "name": "rails-workbench",
   "displayName": "Rails Workbench",
-  "description": "Rails-oriented VS Code tools, including go to definition for view partials in ERB, Haml, and Slim.",
+  "description": "Rails-oriented VS Code tools: partial and URL helper navigation, completion, and configurable routes loading.",
+  "icon": "media/icon.png",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.138.0"
@@ -10,6 +11,7 @@
     "Other"
   ],
   "activationEvents": [
+    "onLanguage:ruby",
     "onLanguage:erb",
     "onLanguage:haml",
     "onLanguage:slim"
@@ -30,9 +32,26 @@
             "html.slim"
           ],
           "description": "Template extensions used when resolving Rails partial files."
+        },
+        "rails-workbench.routes.command": {
+          "type": "string",
+          "default": "bundle exec rails routes",
+          "description": "Shell command whose stdout is parsed as `rails routes` output (e.g. docker compose exec -T web bin/rails routes)."
+        },
+        "rails-workbench.routes.workingDirectory": {
+          "type": "string",
+          "default": "",
+          "description": "Working directory for the routes command. When empty, uses the detected Rails application root."
         }
       }
-    }
+    },
+    "commands": [
+      {
+        "command": "rails-workbench.routes.insert",
+        "category": "Rails Workbench",
+        "title": "Insert URL Helper"
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
