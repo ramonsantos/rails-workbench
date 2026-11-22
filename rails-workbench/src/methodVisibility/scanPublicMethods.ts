@@ -3,7 +3,15 @@ export interface MethodNameRange {
 	end: number;
 }
 
-type Visibility = 'public' | 'private' | 'protected';
+export type MethodVisibility = 'public' | 'private' | 'protected';
+
+export interface MethodsByVisibility {
+	public: MethodNameRange[];
+	private: MethodNameRange[];
+	protected: MethodNameRange[];
+}
+
+type Visibility = MethodVisibility;
 
 type FrameKind = 'class' | 'module' | 'singleton' | 'def' | 'block';
 
@@ -12,14 +20,21 @@ interface StackFrame {
 	defaultVisibility: Visibility;
 }
 
-const DEFAULT_PUBLIC_COLOR = '#3DDC97';
+const HEX_COLOR = /^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$/;
 
 export function isValidHexColor(value: string): boolean {
-	return /^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$/.test(value);
+	return HEX_COLOR.test(value);
 }
 
-export function resolvePublicMethodColor(configured: string): string {
-	return isValidHexColor(configured) ? configured : DEFAULT_PUBLIC_COLOR;
+/** Empty or invalid config means no custom color (theme default). */
+export function parseOptionalMethodColor(
+	configured: string | undefined,
+): string | undefined {
+	const trimmed = (configured ?? '').trim();
+	if (trimmed.length === 0) {
+		return undefined;
+	}
+	return isValidHexColor(trimmed) ? trimmed : undefined;
 }
 
 function codePartOfLine(line: string): string {
@@ -84,8 +99,12 @@ function lineOffsets(source: string): { line: string; start: number }[] {
 	return result;
 }
 
-export function scanPublicMethods(source: string): MethodNameRange[] {
-	const ranges: MethodNameRange[] = [];
+export function emptyMethodsByVisibility(): MethodsByVisibility {
+	return { public: [], private: [], protected: [] };
+}
+
+export function scanMethodsByVisibility(source: string): MethodsByVisibility {
+	const result = emptyMethodsByVisibility();
 	const stack: StackFrame[] = [];
 	const lines = lineOffsets(source);
 
@@ -109,15 +128,13 @@ export function scanPublicMethods(source: string): MethodNameRange[] {
 				if (isClassLikeFrame(parent)) {
 					const effective =
 						inlineVis ?? parent!.defaultVisibility;
-					if (effective === 'public') {
-						const nameOffsetInMatch =
-							defMatch[0].lastIndexOf(methodName);
-						const nameIndex = defMatch.index + nameOffsetInMatch;
-						ranges.push({
-							start: lineStart + nameIndex,
-							end: lineStart + nameIndex + methodName.length,
-						});
-					}
+					const nameOffsetInMatch =
+						defMatch[0].lastIndexOf(methodName);
+					const nameIndex = defMatch.index + nameOffsetInMatch;
+					result[effective].push({
+						start: lineStart + nameIndex,
+						end: lineStart + nameIndex + methodName.length,
+					});
 				}
 
 				stack.push({
@@ -142,5 +159,10 @@ export function scanPublicMethods(source: string): MethodNameRange[] {
 		}
 	}
 
-	return ranges;
+	return result;
+}
+
+/** @deprecated Use scanMethodsByVisibility and read `.public`. */
+export function scanPublicMethods(source: string): MethodNameRange[] {
+	return scanMethodsByVisibility(source).public;
 }

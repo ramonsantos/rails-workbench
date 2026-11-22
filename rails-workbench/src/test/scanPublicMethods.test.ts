@@ -1,16 +1,20 @@
 import * as assert from 'node:assert';
 import {
 	isValidHexColor,
-	resolvePublicMethodColor,
+	parseOptionalMethodColor,
+	scanMethodsByVisibility,
 	scanPublicMethods,
 } from '../methodVisibility/scanPublicMethods';
 
-function names(source: string): string[] {
-	const ranges = scanPublicMethods(source);
+function names(
+	source: string,
+	visibility: 'public' | 'private' | 'protected' = 'public',
+): string[] {
+	const ranges = scanMethodsByVisibility(source)[visibility];
 	return ranges.map((r) => source.slice(r.start, r.end));
 }
 
-suite('scanPublicMethods', () => {
+suite('scanMethodsByVisibility', () => {
 	test('defs before private are public', () => {
 		const source = `class Foo
   def visible
@@ -19,10 +23,11 @@ suite('scanPublicMethods', () => {
   def hidden
   end
 end`;
-		assert.deepStrictEqual(names(source), ['visible']);
+		assert.deepStrictEqual(names(source, 'public'), ['visible']);
+		assert.deepStrictEqual(names(source, 'private'), ['hidden']);
 	});
 
-	test('protected section excludes methods from highlight', () => {
+	test('protected section', () => {
 		const source = `class Foo
   def open
   end
@@ -30,7 +35,8 @@ end`;
   def guarded
   end
 end`;
-		assert.deepStrictEqual(names(source), ['open']);
+		assert.deepStrictEqual(names(source, 'public'), ['open']);
+		assert.deepStrictEqual(names(source, 'protected'), ['guarded']);
 	});
 
 	test('public restores following defs', () => {
@@ -42,7 +48,8 @@ end`;
   def visible_again
   end
 end`;
-		assert.deepStrictEqual(names(source), ['visible_again']);
+		assert.deepStrictEqual(names(source, 'public'), ['visible_again']);
+		assert.deepStrictEqual(names(source, 'private'), ['hidden']);
 	});
 
 	test('inline private def does not affect next def', () => {
@@ -52,7 +59,8 @@ end`;
   def open
   end
 end`;
-		assert.deepStrictEqual(names(source), ['open']);
+		assert.deepStrictEqual(names(source, 'public'), ['open']);
+		assert.deepStrictEqual(names(source, 'private'), ['secret']);
 	});
 
 	test('inline public def under private default', () => {
@@ -61,7 +69,7 @@ end`;
   public def forced
   end
 end`;
-		assert.deepStrictEqual(names(source), ['forced']);
+		assert.deepStrictEqual(names(source, 'public'), ['forced']);
 	});
 
 	test('def self.foo highlights foo', () => {
@@ -69,7 +77,7 @@ end`;
   def self.bar
   end
 end`;
-		assert.deepStrictEqual(names(source), ['bar']);
+		assert.deepStrictEqual(names(source, 'public'), ['bar']);
 	});
 
 	test('nested class resets to public', () => {
@@ -82,7 +90,8 @@ end`;
     end
   end
 end`;
-		assert.deepStrictEqual(names(source), ['inner_public']);
+		assert.deepStrictEqual(names(source, 'public'), ['inner_public']);
+		assert.deepStrictEqual(names(source, 'private'), ['outer_hidden']);
 	});
 
 	test('private inside method body does not affect class defs', () => {
@@ -93,7 +102,10 @@ end`;
   def after_wrapper
   end
 end`;
-		assert.deepStrictEqual(names(source), ['wrapper', 'after_wrapper']);
+		assert.deepStrictEqual(names(source, 'public'), [
+			'wrapper',
+			'after_wrapper',
+		]);
 	});
 
 	test('comment private does not change visibility', () => {
@@ -104,7 +116,7 @@ end`;
   def two
   end
 end`;
-		assert.deepStrictEqual(names(source), ['one', 'two']);
+		assert.deepStrictEqual(names(source, 'public'), ['one', 'two']);
 	});
 
 	test('string containing private does not change visibility', () => {
@@ -113,7 +125,7 @@ end`;
   def still_public
   end
 end`;
-		assert.deepStrictEqual(names(source), ['still_public']);
+		assert.deepStrictEqual(names(source, 'public'), ['still_public']);
 	});
 
 	test('module behaves like class', () => {
@@ -121,13 +133,13 @@ end`;
   def api
   end
 end`;
-		assert.deepStrictEqual(names(source), ['api']);
+		assert.deepStrictEqual(names(source, 'public'), ['api']);
 	});
 
 	test('top-level def is ignored', () => {
 		const source = `def global
 end`;
-		assert.deepStrictEqual(names(source), []);
+		assert.deepStrictEqual(scanMethodsByVisibility(source).public, []);
 	});
 
 	test('nested def inside method is ignored', () => {
@@ -137,18 +149,38 @@ end`;
     end
   end
 end`;
-		assert.deepStrictEqual(names(source), ['outer']);
+		assert.deepStrictEqual(names(source, 'public'), ['outer']);
+	});
+
+	test('scanPublicMethods returns only public ranges', () => {
+		const source = `class Foo
+  def a
+  end
+  private
+  def b
+  end
+end`;
+		assert.deepStrictEqual(
+			scanPublicMethods(source).map((r) => source.slice(r.start, r.end)),
+			['a'],
+		);
 	});
 });
 
-suite('resolvePublicMethodColor', () => {
-	test('accepts valid hex', () => {
-		assert.strictEqual(resolvePublicMethodColor('#AABBCC'), '#AABBCC');
-		assert.strictEqual(resolvePublicMethodColor('#abc'), '#abc');
+suite('parseOptionalMethodColor', () => {
+	test('empty uses theme default', () => {
+		assert.strictEqual(parseOptionalMethodColor(''), undefined);
+		assert.strictEqual(parseOptionalMethodColor(undefined), undefined);
+		assert.strictEqual(parseOptionalMethodColor('   '), undefined);
 	});
 
-	test('falls back on invalid hex', () => {
-		assert.strictEqual(resolvePublicMethodColor('red'), '#3DDC97');
+	test('accepts valid hex', () => {
+		assert.strictEqual(parseOptionalMethodColor('#AABBCC'), '#AABBCC');
+		assert.strictEqual(parseOptionalMethodColor('  #abc  '), '#abc');
+	});
+
+	test('invalid hex does not highlight', () => {
+		assert.strictEqual(parseOptionalMethodColor('red'), undefined);
 	});
 
 	test('isValidHexColor', () => {

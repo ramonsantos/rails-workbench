@@ -1,87 +1,124 @@
 import * as vscode from 'vscode';
 import {
-	resolvePublicMethodColor,
-	scanPublicMethods,
+	MethodVisibility,
+	MethodsByVisibility,
+	parseOptionalMethodColor,
+	scanMethodsByVisibility,
 } from './scanPublicMethods';
 
 const DEBOUNCE_MS = 150;
 
-function readConfig(): { enabled: boolean; color: string } {
+const VISIBILITIES: MethodVisibility[] = ['public', 'private', 'protected'];
+
+interface VisibilityColors {
+	public?: string;
+	private?: string;
+	protected?: string;
+}
+
+function readColors(): VisibilityColors {
 	const config = vscode.workspace.getConfiguration('rails-workbench');
 	return {
-		enabled: config.get<boolean>('methodVisibility.enabled', true),
-		color: resolvePublicMethodColor(
-			config.get<string>('methodVisibility.publicMethodColor', '#3DDC97') ??
-				'#3DDC97',
+		public: parseOptionalMethodColor(
+			config.get<string>('methodVisibility.publicMethodColor'),
+		),
+		private: parseOptionalMethodColor(
+			config.get<string>('methodVisibility.privateMethodColor'),
+		),
+		protected: parseOptionalMethodColor(
+			config.get<string>('methodVisibility.protectedMethodColor'),
 		),
 	};
+}
+
+function anyColorConfigured(colors: VisibilityColors): boolean {
+	return Boolean(colors.public ?? colors.private ?? colors.protected);
 }
 
 export function registerMethodVisibility(
 	context: vscode.ExtensionContext,
 ): void {
-	let decorationType: vscode.TextEditorDecorationType | undefined;
+	const decorationByVisibility = new Map<
+		MethodVisibility,
+		vscode.TextEditorDecorationType
+	>();
+	const decorationColor = new Map<MethodVisibility, string>();
 	let debounceTimer: ReturnType<typeof setTimeout> | undefined;
-	const editorRanges = new Map<string, vscode.Range[]>();
+	const editorCache = new Map<string, MethodsByVisibility>();
 
-	const disposeDecoration = (): void => {
-		decorationType?.dispose();
-		decorationType = undefined;
-	};
-
-	const ensureDecoration = (color: string): vscode.TextEditorDecorationType => {
-		if (decorationType) {
-			return decorationType;
+	const disposeAllDecorations = (): void => {
+		for (const dt of decorationByVisibility.values()) {
+			dt.dispose();
 		}
-		decorationType = vscode.window.createTextEditorDecorationType({
-			color,
-		});
-		context.subscriptions.push(decorationType);
-		return decorationType;
+		decorationByVisibility.clear();
+		decorationColor.clear();
 	};
 
-	const rangesForDocument = (
+	const decorationForVisibility = (
+		visibility: MethodVisibility,
+		color: string,
+	): vscode.TextEditorDecorationType => {
+		const previousColor = decorationColor.get(visibility);
+		if (previousColor !== color) {
+			decorationByVisibility.get(visibility)?.dispose();
+			const dt = vscode.window.createTextEditorDecorationType({ color });
+			decorationByVisibility.set(visibility, dt);
+			decorationColor.set(visibility, color);
+		}
+		return decorationByVisibility.get(visibility)!;
+	};
+
+	const toRanges = (
 		document: vscode.TextDocument,
-	): vscode.Range[] => {
-		if (document.languageId !== 'ruby' || !readConfig().enabled) {
-			return [];
-		}
-		return scanPublicMethods(document.getText()).map(
+		ranges: MethodsByVisibility['public'],
+	): vscode.Range[] =>
+		ranges.map(
 			(r) =>
 				new vscode.Range(
 					document.positionAt(r.start),
 					document.positionAt(r.end),
 				),
 		);
-	};
 
 	const applyToEditor = (editor: vscode.TextEditor): void => {
-		const { enabled, color } = readConfig();
+		const colors = readColors();
 		const key = editor.document.uri.toString();
 
-		if (editor.document.languageId !== 'ruby' || !enabled) {
-			editor.setDecorations(
-				ensureDecoration(color),
-				[],
-			);
-			editorRanges.delete(key);
+		for (const vis of VISIBILITIES) {
+			const dt = decorationByVisibility.get(vis);
+			if (dt) {
+				editor.setDecorations(dt, []);
+			}
+		}
+
+		if (editor.document.languageId !== 'ruby' || !anyColorConfigured(colors)) {
+			editorCache.delete(key);
 			return;
 		}
 
-		const cached = editorRanges.get(key);
-		const ranges =
+		const cached = editorCache.get(key);
+		const byVisibility =
 			cached ??
 			(() => {
-				const computed = rangesForDocument(editor.document);
-				editorRanges.set(key, computed);
+				const computed = scanMethodsByVisibility(editor.document.getText());
+				editorCache.set(key, computed);
 				return computed;
 			})();
 
-		editor.setDecorations(ensureDecoration(color), ranges);
+		for (const vis of VISIBILITIES) {
+			const color = colors[vis];
+			if (!color) {
+				continue;
+			}
+			editor.setDecorations(
+				decorationForVisibility(vis, color),
+				toRanges(editor.document, byVisibility[vis]),
+			);
+		}
 	};
 
 	const invalidateDocument = (uri: vscode.Uri): void => {
-		editorRanges.delete(uri.toString());
+		editorCache.delete(uri.toString());
 	};
 
 	const refreshAll = (): void => {
@@ -113,16 +150,19 @@ export function registerMethodVisibility(
 
 	const onConfigChange = (e: vscode.ConfigurationChangeEvent): void => {
 		if (
-			e.affectsConfiguration('rails-workbench.methodVisibility.enabled') ||
-			e.affectsConfiguration(
-				'rails-workbench.methodVisibility.publicMethodColor',
-			)
+			e.affectsConfiguration('rails-workbench.methodVisibility.publicMethodColor') ||
+			e.affectsConfiguration('rails-workbench.methodVisibility.privateMethodColor') ||
+			e.affectsConfiguration('rails-workbench.methodVisibility.protectedMethodColor')
 		) {
-			disposeDecoration();
-			editorRanges.clear();
+			disposeAllDecorations();
+			editorCache.clear();
 			refreshAll();
 		}
 	};
+
+	context.subscriptions.push({
+		dispose: disposeAllDecorations,
+	});
 
 	context.subscriptions.push(
 		vscode.window.onDidChangeActiveTextEditor((editor) => {
@@ -144,7 +184,7 @@ export function registerMethodVisibility(
 			}
 		}),
 		vscode.workspace.onDidCloseTextDocument((doc) => {
-			editorRanges.delete(doc.uri.toString());
+			editorCache.delete(doc.uri.toString());
 		}),
 		vscode.workspace.onDidChangeConfiguration(onConfigChange),
 	);
